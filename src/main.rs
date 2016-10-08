@@ -1,7 +1,14 @@
 extern crate elf;
 
-use std::env;
 use std::path::PathBuf;
+use std::fs::File;
+use std::io::prelude::*;
+
+fn write_elf(name: &str) {
+    let mut buffer = File::create(name).unwrap();
+    buffer.write(b"some bytes").unwrap();
+    println!("wrote {}", name);
+}
 
 fn main() {
     let path = PathBuf::from("/home/wilfred/projects/tiddles/exit.o");
@@ -16,4 +23,6 @@ fn main() {
     };
 
     println!("{:?}", text_scn.data);
+
+    write_elf("tiddles_out.o");
 }
