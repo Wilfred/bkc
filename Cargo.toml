@@ -5,3 +5,4 @@ authors = ["Wilfred Hughes <me@wilfred.me.uk>"]
 
 [dependencies]
 elf = "0.0.10"
+byteorder = "0.*"

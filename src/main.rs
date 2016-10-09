@@ -1,9 +1,11 @@
 extern crate elf;
+extern crate byteorder;
 
 use std::path::PathBuf;
 use std::fs::File;
 use std::io::prelude::*;
 use std::io::Error;
+use byteorder::{LittleEndian, WriteBytesExt};
 
 use elf::types::*;
 
@@ -22,6 +24,18 @@ fn write_elf64(name: &str) -> Result<(), Error> {
 
     // Zero-pad to 16 bytes, so 'System V' and default ABI.
     try!(buffer.write(&[0u8; 10]));
+
+    // Relocatable.
+    try!(buffer.write_u16::<LittleEndian>(ET_REL.0));
+
+    // x86-64 architecture.
+    try!(buffer.write_u16::<LittleEndian>(EM_X86_64.0));
+
+    // ELF v1
+    try!(buffer.write_u32::<LittleEndian>(EV_CURRENT.0));
+
+    // Entry point for executing the process.
+    try!(buffer.write_u64::<LittleEndian>(0));
 
     println!("wrote {}", name);
     Ok(())
