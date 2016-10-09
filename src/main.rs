@@ -3,11 +3,28 @@ extern crate elf;
 use std::path::PathBuf;
 use std::fs::File;
 use std::io::prelude::*;
+use std::io::Error;
 
-fn write_elf(name: &str) {
-    let mut buffer = File::create(name).unwrap();
-    buffer.write(b"some bytes").unwrap();
+use elf::types::*;
+
+// Based on https://en.wikipedia.org/wiki/Executable_and_Linkable_Format
+// and reading the excellent Rust elf library.
+fn write_elf64(name: &str) -> Result<(), Error> {
+    let mut buffer = try!(File::create(name));
+    // Write the ELF magic number.
+    try!(buffer.write(&[ELFMAG0, ELFMAG1, ELFMAG2, ELFMAG3]));
+
+    // We want a 64 bit ELF file.
+    try!(buffer.write(&[ELFCLASS64.0]));
+
+    // Little-endian.
+    try!(buffer.write(&[ELFDATA2LSB.0]));
+
+    // Zero-pad to 16 bytes, so 'System V' and default ABI.
+    try!(buffer.write(&[0u8; 10]));
+
     println!("wrote {}", name);
+    Ok(())
 }
 
 fn main() {
@@ -24,5 +41,5 @@ fn main() {
 
     println!("{:?}", text_scn.data);
 
-    write_elf("tiddles_out.o");
+    write_elf64("tiddles_out.o").unwrap();
 }
