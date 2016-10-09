@@ -37,6 +37,35 @@ fn write_elf64(name: &str) -> Result<(), Error> {
     // Entry point for executing the process.
     try!(buffer.write_u64::<LittleEndian>(0));
 
+    // Program header immediately follows elf header, so offset 0.
+    try!(buffer.write_u64::<LittleEndian>(0));
+
+    // TODO: calculate the correct section header offset.
+    // This value is just blindly copy-pasted from exit.o.
+    try!(buffer.write_u64::<LittleEndian>(264));
+
+    // Flags can be zero on x86-64.
+    try!(buffer.write_u32::<LittleEndian>(0));
+
+    // Header size, which is 64 bytes.
+    try!(buffer.write_u16::<LittleEndian>(64));
+
+    // Program header table entry size.
+    try!(buffer.write_u16::<LittleEndian>(0));
+
+    // Number of entries in program header entry table.
+    try!(buffer.write_u16::<LittleEndian>(0));
+
+    // Size of a section header table entry.
+    try!(buffer.write_u16::<LittleEndian>(64));
+
+    // The number of sections we will write (which is the number of
+    // entries in the section header table).
+    try!(buffer.write_u16::<LittleEndian>(7));
+
+    // The index in the section header table of section names.
+    try!(buffer.write_u16::<LittleEndian>(4));
+
     println!("wrote {}", name);
     Ok(())
 }
