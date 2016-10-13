@@ -9,6 +9,28 @@ use byteorder::{LittleEndian, WriteBytesExt};
 
 use elf::types::*;
 
+fn write_elf_file(file: elf::File, filename: &str) -> Result<(), Error> {
+    let mut buffer = try!(File::create(filename));
+
+    // Write the ELF magic number.
+    try!(buffer.write(&[ELFMAG0, ELFMAG1, ELFMAG2, ELFMAG3]));
+
+    try!(buffer.write(&[file.ehdr.class.0]));
+    try!(buffer.write(&[file.ehdr.data.0]));
+
+    // TODO: add this to the elf::File struct.
+    try!(buffer.write(&[1]));
+
+    try!(buffer.write(&[file.ehdr.osabi.0]));
+    try!(buffer.write(&[file.ehdr.abiversion]));
+
+    // Currently unused in ELF.
+    try!(buffer.write(&[0; 7]));
+
+    println!("wrote copy {}", filename);
+    Ok(())
+}
+
 // Based on https://en.wikipedia.org/wiki/Executable_and_Linkable_Format
 // and reading the excellent Rust elf library.
 fn write_elf64(name: &str) -> Result<(), Error> {
@@ -77,12 +99,6 @@ fn main() {
         Err(e) => panic!("Error: {:?}", e),
     };
 
-    let text_scn = match file.get_section(".text") {
-        Some(s) => s,
-        None => panic!("Failed to look up .text section"),
-    };
-
-    println!("{:?}", text_scn.data);
-
     write_elf64("tiddles_out.o").unwrap();
+    write_elf_file(file, "copy.o").unwrap();
 }
