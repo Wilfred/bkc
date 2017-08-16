@@ -46,7 +46,7 @@ fn write_u64(mut out: &File, value: u64, elf_header: FileHeader) -> Result<(), E
         }
         _ => {
             panic!("Unable to resolve file endianness");
-        }
+ }
     }
 }
 
