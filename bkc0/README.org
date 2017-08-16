@@ -1,0 +1,66 @@
+A compiler is a program that writes programs.
+
+Before we write our first compiler, let's build a simple program using
+standard Linux tools.
+
+* A Simple Program
+
+The simplest thing a program can do is return with an exit code. In C,
+we'd write this:
+
+#+BEGIN_SRC c
+int main() {
+    return 42;
+}
+#+END_SRC
+
+Which is equivalent to:
+
+#+BEGIN_SRC c
+#include <stdlib.h>
+
+int main() {
+    exit(42);
+}
+#+END_SRC
+
+* System Calls
+
+The operating system is responsible for starting and stopping
+programs. ~exit()~ stops the program by asking the operating system to
+do so.
+
+This is a system call, and every system call is [[http://www.linfo.org/system_call_number.html][assigned a number]]. We
+ask Linux to run a system call by putting the system call number ~eax~
+register, and triggering an interrupt.
+
+#+BEGIN_SRC assembler
+; exit.s
+movl $1, %eax  ; store the system call number in eax
+movl $42, %ebx ; store the argument (42) to the system call
+int $0x80      ; trigger the interrupt
+#+END_SRC
+
+These are three instructions executed by the CPU.
+
+* Creating A Program
+
+~exit.s~ is a text file. Our computer works in bytes, so we must convert
+this text file to bytes for these instructions.
+
+#+BEGIN_SRC sh
+$ as exit.s -o exit.o
+#+END_SRC
+
+However, this isn't enough to actually run our program. Linux executes
+ELF files. ELF files have headers and metadata in them so the kernel
+knows the file is a program.
+
+The linker, ~ld~, creates an executable file which we can run.
+
+#+BEGIN_SRC sh
+$ ld exit.o -o exit
+$ ./exit 
+$ echo $?
+42
+#+END_SRC
