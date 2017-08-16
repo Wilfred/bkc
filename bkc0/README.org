@@ -43,7 +43,7 @@ int $0x80      ; trigger the interrupt
 
 These are three instructions executed by the CPU.
 
-* Creating A Program
+* Raw Instructions
 
 ~exit.s~ is a text file. Our computer works in bytes, so we must convert
 this text file to bytes for these instructions.
@@ -52,15 +52,37 @@ this text file to bytes for these instructions.
 $ as exit.s -o exit.o
 #+END_SRC
 
-However, this isn't enough to actually run our program. Linux executes
-ELF files. ELF files have headers and metadata in them so the kernel
-knows the file is a program.
+This is exactly equivalent to our text file.
+
+#+BEGIN_SRC sh
+$ objdump -d exit.o
+
+exit.o:     file format elf64-x86-64
+
+
+Disassembly of section .text:
+
+0000000000000000 <.text>:
+   0:	b8 01 00 00 00       	mov    $0x1,%eax
+   5:	bb 2a 00 00 00       	mov    $0x2a,%ebx
+   a:	cd 80                	int    $0x80
+#+END_SRC
+
+Note that our first two instructions are 5 bytes, whereas our third
+instruction is only 2 bytes.
+
+* Creating A Program
+
+However, instructions aren't enough to actually run our program. Linux
+executes ELF files. ELF files have headers and metadata in them so the
+kernel knows the file is a program.
 
 The linker, ~ld~, creates an executable file which we can run.
 
 #+BEGIN_SRC sh
 $ ld exit.o -o exit
 $ ./exit 
+# Check we got the exit code expected.
 $ echo $?
 42
 #+END_SRC
